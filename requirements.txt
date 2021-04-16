@@ -1,0 +1,10 @@
+asgiref
+beautifulsoup4
+certifi==2020.12.5
+Django
+django-cors-middleware==1.5.0
+pytz
+regex
+soupsieve
+sqlparse
+typing-extensions
