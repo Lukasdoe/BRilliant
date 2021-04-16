@@ -1,0 +1,189 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"></script>
+
+    <title>BRilliant</title>
+</head>
+
+<body>
+<div class="row text-center m-lg-5 m-sm-2">
+    <div class="col-md animate__animated m-3">
+        <div class="card shadow">
+            <div class="card-body">
+                <h3 class="m-5">Input the BR news article URL below:</h3>
+                <form>
+                    <div class="row mx-2">
+                        <div class="col-sm">
+                            <input type="text" id="url-input" class="form-control"
+                                   placeholder="https://br.de/..." required="required">
+                            <small class="form-text text-muted">You can also browse in the preview to copy the article
+                                link.</small>
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="button" id="extract-button" class="btn btn-primary my-2 my-sm-0" disabled>
+                                Extract
+                                Article
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div class="card mt-sm-2 mt-md-5 mx-sm-1 mx-md-3">
+                    <div class="card-body p-0">
+                        <div class="card-header text-left">Preview</div>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            <embed class="embed-responsive-item" script="pointer-events=none;"
+                                   sandbox="allow-top-navigation allow-scripts allow-same-origin allow-popups allow-pointer-lock allow-forms"
+                                   id="preview-frame" src="https://www.br.de/">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md animate__animated animate__slideInRight m-3" id="article-detail-view">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="mb-4 mt-4">Extracted Headline</h5>
+                <div id="extracted-headline"
+                     class="overflow-auto p-3 mb-3 mb-md-0 m-2 bg-light text-left"
+                     style="overflow: auto; max-height: 8vh;"></div>
+                <h5 class="mb-4 mt-4">Summary</h5>
+                <div id="extracted-summary" class="overflow-auto p-3 mb-3 m-2 mb-md-0 bg-light text-left"
+                     style="overflow: auto; max-height: 10vh;"></div>
+                <h5 class="mb-4 mt-4">Paragraphs</h5>
+                <div id="extracted-paragraphs"
+                     class="overflow-auto p-3 mb-3 mb-md-0 m-2 bg-light text-left"
+                     style="overflow: auto; max-height: 30vh;"></div>
+                <div class="m-3 mt-5">
+                    <button type="button" id="generate-story" class="btn btn-primary w-100">
+                        Generate Instagram Story
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const url_input = document.getElementById('url-input');
+    const preview_frame = document.getElementById("preview-frame");
+
+    const extract_button = document.getElementById("extract-button");
+    const extract_view = document.getElementById("article-detail-view");
+    const extract_headline = document.getElementById("extracted-headline");
+    const extract_summary = document.getElementById("extracted-summary");
+    const extract_paragraphs = document.getElementById("extracted-paragraphs");
+
+    const generate_button = document.getElementById("generate-story");
+
+    window.url_query_fetch_abort = new AbortController();
+    window.extract_fetch_abort = new AbortController();
+
+    function queryInput(input_string) {
+        if (input_string.length <= 8 || !input_string.startsWith("https://")) {
+            markError();
+            return;
+        }
+        window.url_query_fetch_abort.abort();
+        window.url_query_fetch_abort = new AbortController();
+        let fetch_url = "converter/input-url/" + input_string;
+        fetch(fetch_url, {
+            method: 'get',
+            signal: window.url_query_fetch_abort.signal
+        })
+            .then(response => response.status)
+            .then(status_code => {
+                    if (status_code === 200) {
+                        markSuccess()
+                        preview_frame.src = input_string;
+                    } else {
+                        markError()
+                    }
+                }
+            ).catch(e => {
+        });
+    }
+
+    function markError() {
+        url_input.classList.remove("border-success");
+        url_input.classList.add("border-danger");
+        extract_button.disabled = true;
+    }
+
+    function markSuccess() {
+        url_input.classList.add("border-success");
+        url_input.classList.remove("border-danger");
+        extract_button.disabled = false;
+    }
+
+    function extract_data() {
+        window.extract_fetch_abort.abort();
+        url_input.disabled = true;
+        extract_button.disabled = true;
+        let spinner = document.createElement("span");
+        spinner.classList.add("spinner-grow", "spinner-grow-sm");
+        spinner.setAttribute("role", "status");
+        spinner.setAttribute("aria-hidden", "true");
+        extract_button.appendChild(spinner);
+
+        window.extract_fetch_abort = new AbortController();
+        let fetch_url = "converter/extract-article/" + preview_frame.src;
+        fetch(fetch_url, {
+            method: 'get',
+            signal: window.extract_fetch_abort.signal
+        })
+            .then(response => response.json())
+            .then(extracted_data => {
+                    let headline_elem = document.createElement("p");
+                    headline_elem.textContent = extracted_data.headline
+                    extract_headline.appendChild(headline_elem);
+
+                    let summary_elem = document.createElement("p");
+                    summary_elem.textContent = extracted_data.summary;
+                    extract_summary.appendChild(summary_elem);
+
+                    for (let paragraph_headline of Object.keys(extracted_data.paragraphs)) {
+                        let headline = document.createElement("h5");
+                        headline.textContent = paragraph_headline;
+                        extract_paragraphs.appendChild(headline);
+
+                        for (let paragraph_piece of extracted_data.paragraphs[paragraph_headline]) {
+                            let text = document.createElement("p");
+                            text.textContent = paragraph_piece;
+                            extract_paragraphs.appendChild(text);
+                        }
+                    }
+                    document.getElementsByClassName("col-md")[0].classList.add("animate__fadeIn");
+                    extract_view.hidden = false;
+                    extract_button.removeChild(spinner);
+                }
+            ).catch(e => {
+        });
+    }
+
+    window.addEventListener("load", e => queryInput(url_input.value));
+    url_input.addEventListener("input", e => queryInput(e.target.value));
+    extract_button.addEventListener("click", extract_data);
+</script>
+</body>
+
+</html>
