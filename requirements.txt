@@ -8,3 +8,4 @@ regex
 soupsieve
 sqlparse
 typing-extensions
+openai
