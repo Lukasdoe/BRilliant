@@ -1,5 +1,13 @@
+import os.path
+from urllib.request import urlopen
+
 import regex.regex as re
 
+
+# The "unicodify_bytes", "get_pairs" and "break_tokens", as well as the regex expression and the vocab.bpe file below
+# are remixed from the original "latitudegames/GPT-3-Encoder" which is licenced under the MIT License
+# Copyright (c) 2020 AIDungeon. More about their project and licence:
+# https://github.com/latitudegames/GPT-3-Encoder/blob/master/LICENSE
 
 def unicodify_bytes():
     bs = (
@@ -21,6 +29,14 @@ def unicodify_bytes():
 SPLITTING_REGEX = re.compile(r"""'s|'t|'re|'ve|'m|'l l|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""")
 TOKEN_UNICODEIFIER = unicodify_bytes()
 TOKEN_CACHE = {}
+
+if not os.path.isfile("converter/vocab.bpe"):
+    with open("converter/vocab.bpe", "w", encoding="utf-8") as f:
+        f.write(
+            urlopen(
+                "https://raw.githubusercontent.com/latitudegames/GPT-3-Encoder/master/vocab.bpe"
+            ).read().decode("utf-8")
+        )
 
 with open("converter/vocab.bpe", "r", encoding="utf-8") as f:
     bpe_data = f.read()
