@@ -22,12 +22,28 @@
             integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
             crossorigin="anonymous"></script>
 
+    <!-- Load React. -->
+    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script type="application/javascript" src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+
+    <!-- Load our React component. -->
+    {#    <script type="module" src="{% static 'converter/story_emulator.js' %}"></script>#}
+
     <title>BRilliant</title>
 </head>
 
 <body>
 <div class="row text-center m-lg-5 m-sm-2">
-    <div class="col-md animate__animated m-3">
+    <div class="col-auto animate__animated animate__fadeIn m-3" id="third-card" hidden>
+        <div class="card shadow">
+            <div class="card-body">
+                <div id="react_container" class="col-auto"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md animate__animated m-3" id="intro-card">
         <div class="card shadow">
             <div class="card-body">
                 <h3 class="m-5">Input the BR news article URL below:</h3>
@@ -60,7 +76,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md animate__animated animate__slideInRight m-3" id="article-detail-view">
+    <div class="col-md animate__animated animate__slideInRight m-3" id="article-detail-view" hidden>
         <div class="card shadow">
             <div class="card-body">
                 <h5 class="mb-4 mt-4">Extracted Headline</h5>
@@ -94,9 +110,22 @@
     const extract_paragraphs = document.getElementById("extracted-paragraphs");
 
     const generate_button = document.getElementById("generate-story");
+    const first_card = document.getElementById("intro-card");
+    const third_card = document.getElementById("third-card");
 
     window.url_query_fetch_abort = new AbortController();
     window.extract_fetch_abort = new AbortController();
+    let stories = [
+        {
+            url: 'https://picsum.photos/1080/1920',
+        },
+        {
+            url: 'https://picsum.photos/768/1366',
+        },
+        {
+            url: 'https://picsum.photos/480/800',
+        },
+    ];
 
     function queryInput(input_string) {
         if (input_string.length <= 8 || !input_string.startsWith("https://")) {
@@ -180,10 +209,17 @@
         });
     }
 
+    function generateStory(e) {
+        first_card.hidden = true;
+        third_card.hidden = false;
+    }
+
     window.addEventListener("load", e => queryInput(url_input.value));
     url_input.addEventListener("input", e => queryInput(e.target.value));
     extract_button.addEventListener("click", extract_data);
+    generate_button.addEventListener("click", generateStory);
 </script>
+<script src="{% static 'index-bundle.js' %}"></script>
 </body>
 
 </html>

@@ -1,2 +1,4 @@
 db.sqlite3
-converter/vocab.bpe
+/converter/vocab.bpe
+/static/
+/node_modules

@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 class IndexView(View):
     def get(self, request):
-        return render(request, "converter/index.html", context={})
+        return render(request, "index.html", context={})
 
 
 class IndexSearchView(View):

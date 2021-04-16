@@ -57,7 +57,8 @@ ROOT_URLCONF = 'brilliant.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'APP_DIRS': True,
+        'APP_DIRS': False,
+        'DIRS': ["templates"],
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -70,7 +71,7 @@ TEMPLATES = [
 ]
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'converter/templates/'),
+    os.path.join(BASE_DIR, 'static/'),
 )
 
 WSGI_APPLICATION = 'brilliant.wsgi.application'
