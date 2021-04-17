@@ -1,4 +1,4 @@
-"""
+###
 [ARTICLE_TEXT]
-"""
+###
 Erstelle ein multiple-choice Quiz zum obigen Text:
