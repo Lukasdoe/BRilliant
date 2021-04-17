@@ -1,11 +1,13 @@
 asgiref
-beautifulsoup4
+beautifulsoup4~=4.9.3
 certifi==2020.12.5
-Django
+Django~=3.2
 django-cors-middleware==1.5.0
 pytz
-regex
+regex~=2021.4.4
 soupsieve
 sqlparse
 typing-extensions
-openai
+openai~=0.6.3
+pytrends~=4.7.3
+Pillow~=8.2.0

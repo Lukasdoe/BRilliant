@@ -9,6 +9,10 @@ import os
 from bs4 import BeautifulSoup
 import openai
 
+from PIL import Image, ImageFont, ImageDraw
+BLUE = (86, 135, 204, 255)
+WHITE = (255, 255, 255, 255)
+
 class IndexView(View):
     def get(self, request):
         return render(request, "index.html", context={})
@@ -70,6 +74,9 @@ class StoryCreateView(View):
             context["hashtags"] = self.gen_hashtags(body.get("article_text"))
 
         preview_path = self.load_preview_picture(body.get("preview_img"))
+
+        self.gen_stories(preview_path, context["summary"], 1, 2, 3)
+
         return HttpResponse(content=json.dumps(context), status=200, content_type="application/json")
 
     def gen_summary(self, article_text):
@@ -138,3 +145,85 @@ class StoryCreateView(View):
         local_path = os.path.join("preview_images", preview_url.split("/")[-1].split("?")[0])
         urlretrieve(preview_url, local_path)
         return local_path
+
+    def gen_stories(self, image_path, summary, hashtags, quiz_question, quiz_answers,
+                    text_color=WHITE, text_background=BLUE, font='fonts/Roboto-Bold.ttf',
+                    font_size=15, location="centered"):
+
+        image = Image.open(image_path)
+        image_size = image.size
+
+        # crop to 16 by 9
+        size_16_9 = ((image_size[1]//16)*9, image_size[1])
+        print("16, 9", size_16_9)
+        image1 = image.crop((0, 0, size_16_9[0], size_16_9[1]))
+        print("Image1", image1.size)
+        image2 = image.crop((image_size[0]//2 - size_16_9[0]//2, 0, image_size[0]//2 + size_16_9[0]//2, size_16_9[1]))
+        image3 = image.crop((image_size[0] - size_16_9[0], 0, image_size[0], size_16_9[1]))
+
+        sentences = summary.replace("2.", "").replace("3.", "").split(".")
+
+        image_with_text_1 = self.text_on_image(image1, sentences[0], font, font_size,
+                                               text_color, text_background, location)
+        image_with_text_2 = self.text_on_image(image2, sentences[1], font, font_size,
+                                               text_color, text_background, location)
+        image_with_text_3 = self.text_on_image(image3, sentences[2], font, font_size,
+                                               text_color, text_background, location)
+
+        image_with_text_1.save("static/story1.png")
+        image_with_text_2.save("static/story2.png")
+        image_with_text_3.save("static/static3.png")
+
+
+    def wrap_text(self, text, width, font):
+        text_lines = []
+        text_line = []
+        text = text.replace('\n', ' [br] ')
+        words = text.split()
+
+        for word in words:
+            if word == '[br]':
+                text_lines.append(' '.join(text_line))
+                text_line = []
+                continue
+            text_line.append(word)
+            w, h = font.getsize(' '.join(text_line))
+            if w > width:
+                text_line.pop()
+                text_lines.append(' '.join(text_line))
+                text_line = [word]
+
+        if len(text_line) > 0:
+            text_lines.append(' '.join(text_line))
+
+        return text_lines
+
+    def text_on_image(self, image, text, font,
+                      font_size, text_color, text_background, location):
+        image_size = image.size
+
+        title_font = ImageFont.truetype(font, font_size)
+        editable = ImageDraw.Draw(image)
+
+        margin = 40
+        text = self.wrap_text(text, image_size[0] - margin * 2, title_font)
+
+        whole_text_size = editable.textsize("\n".join(text), font=title_font)
+
+        if location == "centered":
+            y = image_size[1] // 2 - whole_text_size[1] // 2
+        else:
+            y = location
+
+        relative = 0
+        for line in text:
+            text_size = editable.textsize(line, font=title_font)
+            margin = (image_size[0] - text_size[0]) // 2
+
+            editable.rectangle((margin - 3, y + relative, margin + text_size[0] + 3, y + text_size[1] + relative + 2),
+                               text_background)
+            print(text_color)
+            editable.text((margin, y + relative), line, fill=text_color, font=title_font)
+            relative += text_size[1]
+
+        return image
