@@ -8,4 +8,5 @@ urlpatterns = [
     path("converter/input-url/<path:search_string>/", IndexSearchView.as_view(), name="index_search"),
     path("converter/extract-article/<path:extract_string>/", IndexExtractView.as_view(), name="index_search"),
     path("converter/create-story/", StoryCreateView.as_view(), name="story_create"),
+    path("converter/token-number/", TokenNumberView.as_view(), name="token_number"),
 ]

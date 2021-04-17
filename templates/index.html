@@ -86,31 +86,40 @@
                 <div id="extracted-headline"
                      class="overflow-auto p-3 mb-3 mb-md-0 m-2 bg-light text-left"
                      style="overflow: auto; max-height: 8vh;"></div>
-                <h5 class="mb-4 mt-4">Summary</h5>
-                <div id="extracted-summary" class="overflow-auto p-3 mb-3 m-2 mb-md-0 bg-light text-left"
+                <h5 class="mb-4 mt-4" hidden>Summary</h5>
+                <div id="extracted-summary" hidden class="overflow-auto p-3 mb-3 m-2 mb-md-0 bg-light text-left"
                      style="overflow: auto; max-height: 10vh;"></div>
                 <h5 class="mb-4 mt-4">Paragraphs</h5>
                 <div id="extracted-paragraphs"
                      class="overflow-auto p-3 mb-3 mb-md-0 m-2 bg-light text-left"
                      style="overflow: auto; max-height: 20vh;"></div>
-                <div class="m-3 mt-4 row-auto text-center">
-                    <div class="form-check form-check-inline">
-                        <input type="checkbox" id="generate-summary" value="" checked class="form-check-input">
-                        <label class="form-check-label" for="generate-summary">Generate Summary</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input type="checkbox" id="generate-quiz" value="" class="form-check-input">
-                        <label class="form-check-label" for="generate-quiz">Generate Quiz</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input type="checkbox" id="generate-poll" value="" class="form-check-input">
-                        <label class="form-check-label" for="generate-poll">Generate Question</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input type="checkbox" id="generate-hashtags" value="" class="form-check-input">
-                        <label class="form-check-label" for="generate-hashtags">Generate HashTags</label>
-                    </div>
-                </div>
+                <table class="m-3 mt-4 row text-left">
+                    <tbody class="">
+                    <tr class="form-check row">
+                        <td class="col-auto"><input type="checkbox" id="generate-summary" value="" checked class="form-check-input">
+                            <label class="form-check-label" for="generate-summary" id="generate-summary-label">Generate
+                                Summary</label></td>
+                        <td id="generate-summary-col" class="col-auto"></td>
+                    </tr>
+                    <tr class="form-check row">
+                        <td class="col-auto"><input type="checkbox" id="generate-quiz" value="" class="form-check-input">
+                            <label class="form-check-label" for="generate-quiz">Generate Quiz⠀⠀⠀</label></td>
+                        <td id="generate-quiz-col" class="col-auto"></td>
+                    </tr>
+                    <tr class="form-check row">
+                        <td class="col-auto"><input type="checkbox" id="generate-poll" value="" class="form-check-input">
+                            <label class="form-check-label" id="generate-poll-label" for="generate-poll">Generate
+                                Question⠀</label></td>
+                        <td id="generate-poll-col" class="col-auto"></td>
+                    </tr>
+                    <tr class="form-check row">
+                        <td class="col-auto"><input type="checkbox" id="generate-hashtags" value="" class="form-check-input">
+                            <label class="form-check-label" id="generate-hashtags-label" for="generate-hashtags">Generate
+                                HashTags</label></td>
+                        <td id="generate-hashtags-col" class="col-auto"></td>
+                    </tr>
+                    </tbody>
+                </table>
                 <div class="m-3 mt-2">
                     <button type="button" id="generate-story" disabled class="btn btn-primary">
                         Generate Instagram Story
@@ -284,6 +293,26 @@
                 window.article_text += elem.textContent;
             }
         });
+        fetch("converter/token-number/", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            }, body: JSON.stringify({
+                article_text: window.article_text
+            })
+        }).then(r => r.json()).then(j => {
+            let summary_checker = document.getElementById("generate-summary-col");
+            let quiz_checker = document.getElementById("generate-quiz-col");
+            let hashtag_checker = document.getElementById("generate-hashtags-col");
+            let poll_checker = document.getElementById("generate-poll-col");
+
+            summary_checker.innerText = j.summary + " Ts.";
+            quiz_checker.innerText = j.quiz + " Ts.";
+            hashtag_checker.innerText = j.hashtags + " Ts.";
+            poll_checker.innerText = j.poll + " Ts.";
+        })
     }
 
     function generateStory(e) {
