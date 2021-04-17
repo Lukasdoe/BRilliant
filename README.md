@@ -8,3 +8,8 @@ After these steps, you should have your staticfiles ready for serving. The djang
 dependencies which are located in the requirements.txt file. Just install them all using `pip install -r ./requirements.txt`.
 
 Afterwards, you can start the development server using `python manage.py runserver`.
+
+## Use the API Backend
+
+In order to generate responses using GPT-3, an environment variable called `OPENAI_API_KEY` has to created, which stores
+your API key. It wil be automatically loaded as soon as it's needed.

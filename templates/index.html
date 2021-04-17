@@ -103,6 +103,10 @@
                         <label class="form-check-label" for="generate-quiz">Generate Quiz</label>
                     </div>
                     <div class="form-check form-check-inline">
+                        <input type="checkbox" id="generate-poll" value="" class="form-check-input">
+                        <label class="form-check-label" for="generate-poll">Generate Question</label>
+                    </div>
+                    <div class="form-check form-check-inline">
                         <input type="checkbox" id="generate-hashtags" value="" class="form-check-input">
                         <label class="form-check-label" for="generate-hashtags">Generate HashTags</label>
                     </div>
@@ -130,6 +134,14 @@
             <div class="card-body">
                 <h5 class="card-title">Quiz</h5>
                 <div id="quiz-card-body" class="text-left"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md animate__animated animate__fadeIn m-3" hidden id="poll-card">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title">Question</h5>
+                <div id="poll-card-body" class="text-left"></div>
             </div>
         </div>
     </div>
@@ -285,6 +297,7 @@
         let gen_summary = document.getElementById("generate-summary").checked;
         let gen_quiz = document.getElementById("generate-quiz").checked;
         let gen_hashtags = document.getElementById("generate-hashtags").checked;
+        let gen_poll = document.getElementById("generate-poll").checked;
 
         let fetch_body = {
             headline: window.headline_text,
@@ -294,6 +307,7 @@
             gen_summary: gen_summary,
             gen_quiz: gen_quiz,
             gen_hashtags: gen_hashtags,
+            gen_poll: gen_poll,
             preview_img: preview_img,
         };
         fetch("converter/create-story/", {
@@ -303,7 +317,13 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrftoken,
             }, body: JSON.stringify(fetch_body)
-        }).then((response) => response.json()).then((json_r) => {
+        }).then((response) => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Something went wrong.');
+            }
+        }).then((json_r) => {
             if (gen_summary) {
                 document.getElementById("summary-card-body").textContent = json_r.summary;
                 document.getElementById("summary-card").hidden = false;
@@ -316,12 +336,23 @@
                 document.getElementById("hashtag-card-body").textContent = json_r.hashtags;
                 document.getElementById("hashtag-card").hidden = false;
             }
+            if (gen_poll) {
+                document.getElementById("poll-card-body").textContent = json_r.poll;
+                document.getElementById("poll-card").hidden = false;
+            }
             window.startStory(["https://picsum.photos/1080/1920/", "https://picsum.photos/1080/1920/", "https://picsum.photos/1080/1920/"]);
             first_card.remove();
             third_card.hidden = false;
             generate_button.disabled = false;
             spinner.remove();
         }).catch((e) => {
+            let error_box = document.createElement("div");
+            error_box.classList.add("alert", "alert-warning");
+            error_box.setAttribute("role", "alert");
+            error_box.textContent = "An error occurred during storing generation. Did you store your API key correctly?"
+            document.querySelector("body").prepend(error_box);
+            generate_button.disabled = false;
+            spinner.remove();
         });
     }
 

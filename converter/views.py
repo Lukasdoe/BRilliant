@@ -56,8 +56,12 @@ class StoryCreateView(View):
     def post(self, request):
         body = json.loads(request.body)
         context = {}
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+
         if body.get("gen_summary"):
             context["summary"] = self.gen_summary(body.get("article_text"))
+            if body.get("gen_poll"):
+                context["poll"] = self.gen_poll(context["summary"])
 
         if body.get("gen_quiz"):
             context["quiz"] = self.gen_quiz(body.get("article_text"))
@@ -70,15 +74,63 @@ class StoryCreateView(View):
 
     def gen_summary(self, article_text):
         with open("prompts/summary_prompt.txt", "r") as f:
-            return f.read() + article_text[:50]
+            prompt_template = f.read().replace("[ARTICLE_TEXT]", article_text)
+            return openai.Completion.create(
+                engine="davinci",
+                prompt=prompt_template,
+                max_tokens=188,
+                temperature=0.12,
+                top_p=0.3,
+                frequency_penalty=1,
+                presence_penalty=0.1,
+                best_of=1,
+                stop=["\n\n", "###"],
+            ).get("choices")[0].get("text")
 
     def gen_quiz(self, article_text):
         with open("prompts/quiz_prompt.txt", "r") as f:
-            return f.read() + article_text[:50]
+            prompt_template = f.read().replace("[ARTICLE_TEXT]", article_text)
+            return openai.Completion.create(
+                engine="davinci",
+                prompt=prompt_template,
+                max_tokens=188,
+                temperature=0.12,
+                top_p=0.3,
+                frequency_penalty=1,
+                presence_penalty=0.1,
+                best_of=1,
+                stop=["\n\n", "###"],
+            ).get("choices")[0].get("text")
 
     def gen_hashtags(self, article_text):
         with open("prompts/hashtag_prompt.txt", "r") as f:
-            return f.read() + article_text[:50]
+            prompt_template = f.read().replace("[ARTICLE_TEXT]", article_text)
+            return openai.Completion.create(
+                engine="davinci",
+                prompt=prompt_template,
+                max_tokens=101,
+                temperature=0.3,
+                top_p=0.7,
+                frequency_penalty=0.3,
+                presence_penalty=0,
+                best_of=1,
+                stop=["###"],
+            ).get("choices")[0].get("text")
+
+    def gen_poll(self, article_summary):
+        with open("prompts/poll_prompt.txt", "r") as f:
+            prompt_template = f.read().replace("[SUMMARY]", article_summary)
+            return openai.Completion.create(
+                engine="davinci",
+                prompt=prompt_template,
+                max_tokens=64,
+                temperature=0.29,
+                top_p=0.68,
+                frequency_penalty=0,
+                presence_penalty=0,
+                best_of=1,
+                stop=["\n", "####"],
+            ).get("choices")[0].get("text")
 
     def load_preview_picture(self, preview_url):
         if not os.path.isdir("preview_images"):

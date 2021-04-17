@@ -1,5 +1,20 @@
+Passende Hashtags zu gegebenen Artikeln finden.
+####
+"""
+Gericht kippt 15-Kilometer-Regel in Bayern
+Die 15-Kilometer-Grenze für Bewohner in Corona-Hotspots gilt in Bayern ab sofort nicht mehr. Der Bayerische Verwaltungsgerichtshof setzte die Regelung im Eilverfahren vorläufig außer Vollzug. Bestätigt wurde indes die FFP2-Maskenpflicht. Der Bayerische Verwaltungsgerichtshof hat das Verbot von touristischen Tagesausflügen für Bewohner von Corona-Hotspots über einen Umkreis von 15 Kilometern hinaus in Bayern vorläufig gekippt. Die textliche Festlegung eines solchen Umkreises sei nicht deutlich genug und verstoße aller Voraussicht nach gegen den Grundsatz der Normenklarheit, entschied das Gericht am Dienstag. Die 15-Kilometer-Regel wurde Anfang Januar für alle Bewohner von Corona-Hotspots beschlossen. Sie sieht vor, dass Bewohner von Städten und Landkreisen mit einer Sieben-Tage-Inzidenz von mindestens 200 Neuinfektionen pro 100.000 Einwohner einen Umkreis von 15 Kilometern rund um ihre Wohnortgemeinde nicht zum Zwecke touristischer Tagesausflüge verlassen dürfen.
+
+Nach Auffassung der Münchner Richter ist für die Betroffenen der räumliche Geltungsbereich des Verbots nicht hinreichend erkennbar. Das Gericht ging dabei nicht auf die vom Antragsteller aufgeworfene Frage der Verhältnismäßigkeit der Maßnahme ein. Auf diese sei es nicht mehr angekommen.
+
+Die Entscheidung gilt ab sofort bis zu einer Entscheidung in der Hauptsache. Gesundheitsminister Klaus Holetschek (CSU) erklärte, er habe den Gerichtsbeschluss mit Bedauern zur Kenntnis genommen. Die möglichen Konsequenzen würden geprüft.
+
+Auch die Pflicht zum Tragen einer FFP2-Maske kann in Bayern in Kraft bleiben. Der Bayerische Verwaltungsgerichtshof (VGH) lehnte einen anderen Eilantrag gegen die Pflicht zur Benutzung eines solchen medizinischen Mund-Nasen-Schutzes in Bussen und Bahnen sowie beim Einkaufen ab.
+
+Die FFP2-Masken böten "einen erhöhten Selbst- und Fremdschutz". Eine Gesundheitsgefahr sei dadurch nicht zu erwarten, auch die Kosten für die Anschaffung seien "grundsätzlich zumutbar", heißt es in der Entscheidung. Ob notfalls die Sozialkassen dafür aufkommen müssten, lässt das Gericht offen.
+"""
+Hashtags: Corona, Bayern, Maskenpflicht, Gericht, Einreisesperre, Tourismus
 ###
-[ARTICLE]
-###
-10 Schlagwörter aus dem obigen Text:
-#
+"""
+[ARTICLE_TEXT]
+"""
+Hashtags:

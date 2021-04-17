@@ -1,1 +1,5 @@
-[SUMMARY PROMPT]
+###
+[ARTICLE_TEXT]
+###
+Kurze Zusammenfassung des gesamten obigen Textes in einfacher Sprache und 3 Stichpunkten:
+1.

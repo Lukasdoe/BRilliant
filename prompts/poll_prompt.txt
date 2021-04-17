@@ -1,0 +1,11 @@
+Erstelle eine Meinungsumfrage mit den Antwortmöglichkeiten "Ja" und "Nein" für Leser des Textes.
+####
+"""
+Viele Leute im Landkreis Donau-Ries wollen den Impfstoff von Astrazeneca nicht. Seit kurzem bleibt dort Impfstoff übrig, weil sich Menschen damit nicht impfen lassen. Trotzdem dürfen nur alte und kranke Menschen oder Menschen mit besonderen Berufen den Impfstoff bekommen.
+"""
+Frage: Sollten auch andere Bürger den Astrazeneca Impfstoff erhalten können, wenn er übrig bleibt?
+####
+"""
+[SUMMARY]
+"""
+Frage:
