@@ -6,7 +6,7 @@ from urllib.error import HTTPError, URLError
 import re
 import json
 from bs4 import BeautifulSoup
-
+import openai
 
 class IndexView(View):
     def get(self, request):
@@ -48,3 +48,33 @@ class IndexExtractView(View):
             except (HTTPError, URLError, ValueError) as e:
                 pass
         return HttpResponseNotFound()
+
+
+class StoryCreateView(View):
+    def post(self, request):
+        body = json.loads(request.body)
+        context = {}
+        print(body)
+        if body.get("gen_summary"):
+            context["summary"] = self.gen_summary(body.get("article_text"))
+
+        if body.get("gen_quiz"):
+            context["quiz"] = self.gen_quiz(body.get("article_text"))
+
+        if body.get("gen_hashtags"):
+            context["hashtags"] = self.gen_hashtags(body.get("article_text"))
+
+        print(context)
+        return HttpResponse(content=json.dumps(context), status=200, content_type="application/json")
+
+    def gen_summary(self, article_text):
+        with open("prompts/summary_prompt.txt", "r") as f:
+            return f.read() + article_text[:50]
+
+    def gen_quiz(self, article_text):
+        with open("prompts/quiz_prompt.txt", "r") as f:
+            return f.read() + article_text[:50]
+
+    def gen_hashtags(self, article_text):
+        with open("prompts/hashtag_prompt.txt", "r") as f:
+            return f.read() + article_text[:50]

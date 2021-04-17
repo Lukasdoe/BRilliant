@@ -22,21 +22,24 @@
             integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
             crossorigin="anonymous"></script>
 
+    <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+
     <!-- Load React. -->
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
     <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
     <script type="application/javascript" src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
 
-    <!-- Load our React component. -->
-    {#    <script type="module" src="{% static 'converter/story_emulator.js' %}"></script>#}
-
     <title>BRilliant</title>
 </head>
 
 <body>
-<div class="row text-center m-lg-5 m-sm-2">
-    <div class="col-auto animate__animated animate__fadeIn m-3" id="third-card" hidden>
+{% csrf_token %}
+<script>
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+</script>
+<div class="row text-center mt-lg-5 mx-lg-5 m-sm-2">
+    <div class="col-auto animate__animated animate__fadeIn m-3" hidden id="third-card">
         <div class="card shadow">
             <div class="card-body">
                 <div id="react_container" class="col-auto"></div>
@@ -76,7 +79,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md animate__animated animate__slideInRight m-3" id="article-detail-view" hidden>
+    <div class="col-md animate__animated animate__slideInRight m-3" id="article-detail-view">
         <div class="card shadow">
             <div class="card-body">
                 <h5 class="mb-4 mt-4">Extracted Headline</h5>
@@ -89,9 +92,23 @@
                 <h5 class="mb-4 mt-4">Paragraphs</h5>
                 <div id="extracted-paragraphs"
                      class="overflow-auto p-3 mb-3 mb-md-0 m-2 bg-light text-left"
-                     style="overflow: auto; max-height: 30vh;"></div>
-                <div class="m-3 mt-5">
-                    <button type="button" id="generate-story" class="btn btn-primary w-100">
+                     style="overflow: auto; max-height: 20vh;"></div>
+                <div class="m-3 mt-4 row-auto text-center">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" id="generate-summary" value="" checked class="form-check-input">
+                        <label class="form-check-label" for="generate-summary">Generate Summary</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" id="generate-quiz" value="" class="form-check-input">
+                        <label class="form-check-label" for="generate-quiz">Generate Quiz</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" id="generate-hashtags" value="" class="form-check-input">
+                        <label class="form-check-label" for="generate-hashtags">Generate HashTags</label>
+                    </div>
+                </div>
+                <div class="m-3 mt-2">
+                    <button type="button" id="generate-story" disabled class="btn btn-primary">
                         Generate Instagram Story
                     </button>
                 </div>
@@ -99,6 +116,33 @@
         </div>
     </div>
 </div>
+<div class="row text-center mx-lg-5 mx-sm-2 my-2">
+    <div class="col-md animate__animated animate__fadeIn m-3" hidden id="summary-card">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title">Summary</h5>
+                <div id="summary-card-body" class="text-left"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md animate__animated animate__fadeIn m-3" hidden id="quiz-card">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title">Quiz</h5>
+                <div id="quiz-card-body" class="text-left"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md animate__animated animate__fadeIn m-3" hidden id="hashtag-card">
+        <div class="card shadow">
+            <div class="card-body">
+                <h5 class="card-title">Hashtags</h5>
+                <div id="hashtag-card-body" class="text-left"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'index-bundle.js' %}"></script>
 <script>
     const url_input = document.getElementById('url-input');
     const preview_frame = document.getElementById("preview-frame");
@@ -115,17 +159,6 @@
 
     window.url_query_fetch_abort = new AbortController();
     window.extract_fetch_abort = new AbortController();
-    let stories = [
-        {
-            url: 'https://picsum.photos/1080/1920',
-        },
-        {
-            url: 'https://picsum.photos/768/1366',
-        },
-        {
-            url: 'https://picsum.photos/480/800',
-        },
-    ];
 
     function queryInput(input_string) {
         if (input_string.length <= 8 || !input_string.startsWith("https://")) {
@@ -183,35 +216,108 @@
             .then(response => response.json())
             .then(extracted_data => {
                     let headline_elem = document.createElement("p");
-                    headline_elem.textContent = extracted_data.headline
+                    headline_elem.textContent = extracted_data.headline;
+                    headline_elem.setAttribute("contenteditable", "true");
                     extract_headline.appendChild(headline_elem);
+                    window.headline_container = headline_elem;
+                    headline_elem.addEventListener("input", updateText);
 
                     let summary_elem = document.createElement("p");
                     summary_elem.textContent = extracted_data.summary;
+                    summary_elem.setAttribute("contenteditable", "true");
                     extract_summary.appendChild(summary_elem);
+                    window.summary_conatiner = summary_elem;
+                    summary_elem.addEventListener("input", updateText);
 
+                    window.article_containers = [];
                     for (let paragraph_headline of Object.keys(extracted_data.paragraphs)) {
                         let headline = document.createElement("h5");
                         headline.textContent = paragraph_headline;
+                        headline.setAttribute("contenteditable", "true");
                         extract_paragraphs.appendChild(headline);
+                        window.article_containers.push(headline);
+                        headline.addEventListener("input", updateText);
 
                         for (let paragraph_piece of extracted_data.paragraphs[paragraph_headline]) {
                             let text = document.createElement("p");
                             text.textContent = paragraph_piece;
+                            text.setAttribute("contenteditable", "true");
                             extract_paragraphs.appendChild(text);
+                            window.article_containers.push(text);
+                            text.addEventListener("input", updateText);
                         }
                     }
                     document.getElementsByClassName("col-md")[0].classList.add("animate__fadeIn");
                     extract_view.hidden = false;
                     extract_button.removeChild(spinner);
+                    generate_button.disabled = false;
+                    updateText();
                 }
             ).catch(e => {
         });
     }
 
+    function updateText(e) {
+        window.headline_text = window.headline_container.textContent;
+        window.summary_text = window.summary_conatiner.textContent;
+        window.article_text = "";
+        window.article_containers.forEach((elem) => {
+            if (elem.tagName === "H5") {
+                window.article_text += ("\n\n" + elem.textContent + "\n\n");
+            } else {
+                window.article_text += elem.textContent;
+            }
+        });
+    }
+
     function generateStory(e) {
-        first_card.hidden = true;
-        third_card.hidden = false;
+        generate_button.disabled = true;
+        let spinner = document.createElement("span");
+        spinner.classList.add("spinner-grow", "spinner-grow-sm");
+        spinner.setAttribute("role", "status");
+        spinner.setAttribute("aria-hidden", "true");
+        generate_button.appendChild(spinner);
+
+        let gen_summary = document.getElementById("generate-summary").checked;
+        let gen_quiz = document.getElementById("generate-quiz").checked;
+        let gen_hashtags = document.getElementById("generate-hashtags").checked;
+
+        let fetch_body = {
+            headline: window.headline_text,
+            summary: window.summary_text,
+            article_text: window.article_text,
+            article_url: url_input.value,
+            gen_summary: gen_summary,
+            gen_quiz: gen_quiz,
+            gen_hashtags: gen_hashtags,
+        };
+        fetch("converter/create-story/", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            }, body: JSON.stringify(fetch_body)
+        }).then((response) => response.json()).then((json_r) => {
+            if (gen_summary) {
+                document.getElementById("summary-card-body").textContent = json_r.summary;
+                document.getElementById("summary-card").hidden = false;
+            }
+            if (gen_quiz) {
+                document.getElementById("quiz-card-body").textContent = json_r.quiz;
+                document.getElementById("quiz-card").hidden = false;
+            }
+            if (gen_hashtags) {
+                document.getElementById("hashtag-card-body").textContent = json_r.hashtags;
+                document.getElementById("hashtag-card").hidden = false;
+            }
+            window.startStory(["https://picsum.photos/1080/1920/", "https://picsum.photos/1080/1920/", "https://picsum.photos/1080/1920/"]);
+            first_card.remove();
+            third_card.hidden = false;
+            generate_button.disabled = false;
+            spinner.remove();
+        }).catch((e) => {
+        });
     }
 
     window.addEventListener("load", e => queryInput(url_input.value));
@@ -219,7 +325,6 @@
     extract_button.addEventListener("click", extract_data);
     generate_button.addEventListener("click", generateStory);
 </script>
-<script src="{% static 'index-bundle.js' %}"></script>
 </body>
 
 </html>
