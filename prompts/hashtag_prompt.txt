@@ -1,1 +1,5 @@
-[HASHTAG PROMPT]
+###
+[ARTICLE]
+###
+10 Schlagwörter aus dem obigen Text:
+#
