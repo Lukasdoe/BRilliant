@@ -3,3 +3,4 @@ db.sqlite3
 /static/index-bundle.js
 /node_modules
 !/static/favicon.ico
+/preview_images

@@ -157,6 +157,8 @@
     const first_card = document.getElementById("intro-card");
     const third_card = document.getElementById("third-card");
 
+    let preview_img = "";
+
     window.url_query_fetch_abort = new AbortController();
     window.extract_fetch_abort = new AbortController();
 
@@ -175,10 +177,10 @@
             .then(response => response.status)
             .then(status_code => {
                     if (status_code === 200) {
-                        markSuccess()
+                        markSuccess();
                         preview_frame.src = input_string;
                     } else {
-                        markError()
+                        markError();
                     }
                 }
             ).catch(e => {
@@ -215,6 +217,8 @@
         })
             .then(response => response.json())
             .then(extracted_data => {
+                    preview_img = extracted_data.preview_img;
+
                     let headline_elem = document.createElement("p");
                     headline_elem.textContent = extracted_data.headline;
                     headline_elem.setAttribute("contenteditable", "true");
@@ -290,6 +294,7 @@
             gen_summary: gen_summary,
             gen_quiz: gen_quiz,
             gen_hashtags: gen_hashtags,
+            preview_img: preview_img,
         };
         fetch("converter/create-story/", {
             method: 'POST',
