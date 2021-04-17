@@ -8,6 +8,8 @@ import json
 import os
 from bs4 import BeautifulSoup
 import openai
+from converter.utils import tokenize
+
 
 class IndexView(View):
     def get(self, request):
@@ -40,6 +42,7 @@ class IndexExtractView(View):
                     elif item.name == "h4":
                         last_section_name = item.text
                         sections[item.text] = []
+                del sections[last_section_name][-1]
                 context = {
                     "headline": soup.find_all("h3")[0].text,
                     "summary": soup.find_all("p")[1].text,
@@ -50,6 +53,19 @@ class IndexExtractView(View):
             except (HTTPError, URLError, ValueError) as e:
                 pass
         return HttpResponseNotFound()
+
+
+class TokenNumberView(View):
+    def post(self, request):
+        article_text = json.loads(request.body).get("article_text")
+        blank = len(list(tokenize(article_text)))
+        context = {
+            "summary": blank + len(list(tokenize(open("prompts/summary_prompt.txt").read()))),
+            "quiz": blank + len(list(tokenize(open("prompts/quiz_prompt.txt").read()))),
+            "poll": blank + len(list(tokenize(open("prompts/poll_prompt.txt").read()))),
+            "hashtags": 150 + len(list(tokenize(open("prompts/hashtag_prompt.txt").read()))),
+        }
+        return HttpResponse(content=json.dumps(context))
 
 
 class StoryCreateView(View):
@@ -85,7 +101,7 @@ class StoryCreateView(View):
                 presence_penalty=0.1,
                 best_of=1,
                 stop=["\n\n", "###"],
-            ).get("choices")[0].get("text")
+            ).get("choices")[0].get("text").replace("2. ", "").replace("3. ", "")
 
     def gen_quiz(self, article_text):
         with open("prompts/quiz_prompt.txt", "r") as f:
