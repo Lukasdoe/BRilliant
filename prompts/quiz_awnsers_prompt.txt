@@ -1,0 +1,7 @@
+###
+[ARTICLE]
+###
+Welche Antwort passt am besten zur Frage "[QUESTION]"
+for n in range(len(QUESTION_AWNSERS)):
+  [QUESTION_AWNSERS(n)]  
+Antwort:
