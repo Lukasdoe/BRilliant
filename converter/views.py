@@ -83,6 +83,9 @@ class StoryCreateView(View):
         context["summary"] = summary.replace("2. ", "").replace("3. ", "")
         if body.get("gen_poll"):
             context["poll"] = self.gen_poll(context["summary"])
+            poll = context["poll"]
+        else:
+            poll = ""
 
         if body.get("gen_quiz"):
             context["quiz"] = self.gen_quiz(body.get("article_text"))
@@ -115,8 +118,8 @@ class StoryCreateView(View):
 
         answers = ["Answer 1", "Answer 2", "Answer 3"]  # TODO: add openai call and put in actual answers
 
-        self.gen_stories(preview_path, summary, hashtags, quiz, answers,
-                         body.get("gen_quiz"), body.get("gen_hashtags"))
+        self.gen_stories(preview_path, summary, hashtags, quiz, answers, poll,
+                         body.get("gen_quiz"), body.get("gen_hashtags"), body.get("gen_poll"))
 
         return HttpResponse(content=json.dumps(context), status=200, content_type="application/json")
 
@@ -187,7 +190,7 @@ class StoryCreateView(View):
         urlretrieve(preview_url, local_path)
         return local_path
 
-    def gen_stories(self, image_path, summary, hashtags, quiz_question, quiz_answers, gen_quiz, gen_hashtags,
+    def gen_stories(self, image_path, summary, hashtags, quiz_question, quiz_answers,poll, gen_quiz, gen_hashtags, gen_poll,
                     text_color=WHITE, text_background=BLUE, font='fonts/Roboto-Bold.ttf',
                     font_size=40, location="centered"):
 
@@ -205,8 +208,8 @@ class StoryCreateView(View):
         if summary.count("2. ") and summary.count("3. "):
             sentences = [
                 summary.split("2. ")[0],
-                summary.split("2. ")[1].split("3. ", "")[0],
-                summary.split("2. ")[1].split("3. ", "")[1],
+                summary.split("2. ")[1].split("3. ")[0],
+                summary.split("2. ")[1].split("3. ")[1],
             ]
         else:
             sentences = summary.replace("2. ", "").replace("3. ", "").split(".")
@@ -219,6 +222,10 @@ class StoryCreateView(View):
             second_story = sentences[2]
         image_with_text_2 = self.text_on_image(image2, second_story, font, font_size,
                                                text_color, text_background, location)
+
+        if gen_poll:
+            poll = self.process_poll("poll_template/poll.png", poll, font)
+            image_with_text_2 = self.embed_poll(poll, image_with_text_2, "")
 
         if gen_quiz:
             quiz = self.process_quiz("quiz_templates/quiz" + str(len(quiz_answers)) + ".png",
@@ -314,5 +321,32 @@ class StoryCreateView(View):
         margin = (image_size[0] - quiz_size[0]) // 2
 
         image.paste(quiz, (margin, 300), quiz)
+
+        return image
+
+    def process_poll(self, image, question, font):
+        image = Image.open(image)
+        image_size = image.size
+
+        title_font = ImageFont.truetype(font, 30)
+        editable = ImageDraw.Draw(image)
+
+        question = self.wrap_text(question, image_size[0] - 60, title_font)
+        question = "\n".join(question)
+
+        editable.text((40, 140), question.upper(), (0, 0, 0), font=title_font)
+
+        return image
+
+    def embed_poll(self, quiz, image, location):
+        image_size = image.size
+
+        quiz_size = quiz.size
+        quiz.thumbnail((image_size[0]*0.8, image_size[0]*0.8 * round(quiz_size[1] / quiz_size[0])), Image.ANTIALIAS)
+        quiz_size = quiz.size
+
+        margin = (image_size[0] - quiz_size[0]) // 2
+
+        image.paste(quiz, (margin, 650), quiz)
 
         return image
