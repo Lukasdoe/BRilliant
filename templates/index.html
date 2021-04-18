@@ -96,7 +96,7 @@
                 <table class="m-3 mt-4 row text-left">
                     <tbody class="">
                     <tr class="form-check row">
-                        <td class="col-auto"><input type="checkbox" id="generate-summary" value="" checked class="form-check-input">
+                        <td class="col-auto"><input type="checkbox" id="generate-summary" value="" checked disabled class="form-check-input">
                             <label class="form-check-label" for="generate-summary" id="generate-summary-label">Generate
                                 Summary</label></td>
                         <td id="generate-summary-col" class="col-auto"></td>
@@ -109,7 +109,7 @@
                     <tr class="form-check row">
                         <td class="col-auto"><input type="checkbox" id="generate-poll" value="" class="form-check-input">
                             <label class="form-check-label" id="generate-poll-label" for="generate-poll">Generate
-                                Question⠀</label></td>
+                                Question</label></td>
                         <td id="generate-poll-col" class="col-auto"></td>
                     </tr>
                     <tr class="form-check row">
@@ -308,10 +308,10 @@
             let hashtag_checker = document.getElementById("generate-hashtags-col");
             let poll_checker = document.getElementById("generate-poll-col");
 
-            summary_checker.innerText = j.summary + " Ts.";
-            quiz_checker.innerText = j.quiz + " Ts.";
-            hashtag_checker.innerText = j.hashtags + " Ts.";
-            poll_checker.innerText = j.poll + " Ts.";
+            summary_checker.innerText = j.summary + " Tokens.";
+            quiz_checker.innerText = j.quiz + " Tokens.";
+            hashtag_checker.innerText = j.hashtags + " Tokens.";
+            poll_checker.innerText = j.poll + " Tokens.";
         })
     }
 
@@ -369,7 +369,7 @@
                 document.getElementById("poll-card-body").textContent = json_r.poll;
                 document.getElementById("poll-card").hidden = false;
             }
-            window.startStory(["https://picsum.photos/1080/1920/", "https://picsum.photos/1080/1920/", "https://picsum.photos/1080/1920/"]);
+            window.startStory(["/static/story1.png", "/static/story2.png", "/static/story3.png"]);
             first_card.remove();
             third_card.hidden = false;
             generate_button.disabled = false;

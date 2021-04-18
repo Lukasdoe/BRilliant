@@ -65,10 +65,10 @@ class TokenNumberView(View):
         article_text = json.loads(request.body).get("article_text")
         blank = len(list(tokenize(article_text)))
         context = {
-            "summary": blank + len(list(tokenize(open("prompts/summary_prompt.txt").read()))),
-            "quiz": blank + len(list(tokenize(open("prompts/quiz_prompt.txt").read()))),
-            "poll": blank + len(list(tokenize(open("prompts/poll_prompt.txt").read()))),
-            "hashtags": 150 + len(list(tokenize(open("prompts/hashtag_prompt.txt").read()))),
+            "summary": blank + len(list(tokenize(open("prompts/summary_prompt.txt").read()))) + 188,
+            "quiz": blank + len(list(tokenize(open("prompts/quiz_prompt.txt").read()))) + 188,
+            "poll": 150 + len(list(tokenize(open("prompts/poll_prompt.txt").read()))) + 64,
+            "hashtags": blank + len(list(tokenize(open("prompts/hashtag_prompt.txt").read()))) + 101,
         }
         return HttpResponse(content=json.dumps(context))
 
@@ -79,10 +79,10 @@ class StoryCreateView(View):
         context = {}
         openai.api_key = os.getenv("OPENAI_API_KEY")
 
-        if body.get("gen_summary"):
-            context["summary"] = self.gen_summary(body.get("article_text"))
-            if body.get("gen_poll"):
-                context["poll"] = self.gen_poll(context["summary"])
+        summary = self.gen_summary(body.get("article_text"))
+        context["summary"] = summary.replace("2. ", "").replace("3. ", "")
+        if body.get("gen_poll"):
+            context["poll"] = self.gen_poll(context["summary"])
 
         if body.get("gen_quiz"):
             context["quiz"] = self.gen_quiz(body.get("article_text"))
@@ -113,11 +113,9 @@ class StoryCreateView(View):
 
         preview_path = self.load_preview_picture(body.get("preview_img"))
 
-        # compare with Trending
-
         answers = ["Answer 1", "Answer 2", "Answer 3"]  # TODO: add openai call and put in actual answers
 
-        self.gen_stories(preview_path, context["summary"], hashtags, quiz, answers,
+        self.gen_stories(preview_path, summary, hashtags, quiz, answers,
                          body.get("gen_quiz"), body.get("gen_hashtags"))
 
         return HttpResponse(content=json.dumps(context), status=200, content_type="application/json")
@@ -135,7 +133,7 @@ class StoryCreateView(View):
                 presence_penalty=0.1,
                 best_of=1,
                 stop=["\n\n", "###"],
-            ).get("choices")[0].get("text").replace("2. ", "").replace("3. ", "")
+            ).get("choices")[0].get("text")
 
     def gen_quiz(self, article_text):
         with open("prompts/quiz_prompt.txt", "r") as f:
@@ -191,20 +189,27 @@ class StoryCreateView(View):
 
     def gen_stories(self, image_path, summary, hashtags, quiz_question, quiz_answers, gen_quiz, gen_hashtags,
                     text_color=WHITE, text_background=BLUE, font='fonts/Roboto-Bold.ttf',
-                    font_size=15, location="centered"):
+                    font_size=40, location="centered"):
 
         image = Image.open(image_path)
         image_size = image.size
 
         # crop to 16 by 9
         size_16_9 = ((image_size[1]//16)*9, image_size[1])
-        print("16, 9", size_16_9)
+        #print("16, 9", size_16_9)
         image1 = image.crop((0, 0, size_16_9[0], size_16_9[1]))
-        print("Image1", image1.size)
+        #print("Image1", image1.size)
         image2 = image.crop((image_size[0]//2 - size_16_9[0]//2, 0, image_size[0]//2 + size_16_9[0]//2, size_16_9[1]))
         image3 = image.crop((image_size[0] - size_16_9[0], 0, image_size[0], size_16_9[1]))
 
-        sentences = summary.replace("2.", "").replace("3.", "").split(".")
+        if summary.count("2. ") and summary.count("3. "):
+            sentences = [
+                summary.split("2. ")[0],
+                summary.split("2. ")[1].split("3. ", "")[0],
+                summary.split("2. ")[1].split("3. ", "")[1],
+            ]
+        else:
+            sentences = summary.replace("2. ", "").replace("3. ", "").split(".")
 
         image_with_text_1 = self.text_on_image(image1, " ".join(sentences[:2]), font, font_size,
                                                text_color, text_background, location)
