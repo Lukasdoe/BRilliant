@@ -13,3 +13,6 @@ Afterwards, you can start the development server using `python manage.py runserv
 
 In order to generate responses using GPT-3, an environment variable called `OPENAI_API_KEY` has to created, which stores
 your API key. It wil be automatically loaded as soon as it's needed.
+
+## Demonstration
+![](https://github.com/Lukasdoe/BRilliant/raw/master/demonstration.gif)
