@@ -12,6 +12,7 @@ from converter.utils import tokenize
 
 
 from PIL import Image, ImageFont, ImageDraw
+from pytrends.request import TrendReq
 BLUE = (86, 135, 204, 255)
 WHITE = (255, 255, 255, 255)
 
@@ -85,13 +86,39 @@ class StoryCreateView(View):
 
         if body.get("gen_quiz"):
             context["quiz"] = self.gen_quiz(body.get("article_text"))
+            quiz = context["quiz"]
+        else:
+            quiz = ""
 
         if body.get("gen_hashtags"):
             context["hashtags"] = self.gen_hashtags(body.get("article_text"))
 
+            print(context["hashtags"])
+            hashtags = context["hashtags"].split(",")
+            if len(hashtags) > 2:
+                hashtags = [h.strip() for h in hashtags]
+                pytrends = TrendReq(hl='de-DE', tz=120)
+                kw_list = hashtags[:5]
+                print(kw_list)
+                pytrends.build_payload(kw_list, cat=0, timeframe='today 1-m', geo='DE')
+                interest = pytrends.interest_by_region(resolution='COUNTRY', inc_low_vol=False, inc_geo_code=False)
+                print(interest)
+                print(interest[interest.index == "Bayern"])
+                interest_dict = interest[interest.index == "Bayern"].to_dict('records')[0]
+                hashtags = sorted(interest_dict, key=interest_dict.get, reverse=True)[:2]
+
+            hashtags = ['#' + "".join(e for e in h if e.isalnum() and e != '-').lower() for h in hashtags]
+        else:
+            hashtags = list()
+
         preview_path = self.load_preview_picture(body.get("preview_img"))
 
-        self.gen_stories(preview_path, context["summary"], 1, 2, 3)
+        # compare with Trending
+
+        answers = ["Answer 1", "Answer 2", "Answer 3"]  # TODO: add openai call and put in actual answers
+
+        self.gen_stories(preview_path, context["summary"], hashtags, quiz, answers,
+                         body.get("gen_quiz"), body.get("gen_hashtags"))
 
         return HttpResponse(content=json.dumps(context), status=200, content_type="application/json")
 
@@ -133,7 +160,7 @@ class StoryCreateView(View):
                 prompt=prompt_template,
                 max_tokens=101,
                 temperature=0.3,
-                top_p=0.7,
+                top_p=1,
                 frequency_penalty=0.3,
                 presence_penalty=0,
                 best_of=1,
@@ -162,7 +189,7 @@ class StoryCreateView(View):
         urlretrieve(preview_url, local_path)
         return local_path
 
-    def gen_stories(self, image_path, summary, hashtags, quiz_question, quiz_answers,
+    def gen_stories(self, image_path, summary, hashtags, quiz_question, quiz_answers, gen_quiz, gen_hashtags,
                     text_color=WHITE, text_background=BLUE, font='fonts/Roboto-Bold.ttf',
                     font_size=15, location="centered"):
 
@@ -179,16 +206,26 @@ class StoryCreateView(View):
 
         sentences = summary.replace("2.", "").replace("3.", "").split(".")
 
-        image_with_text_1 = self.text_on_image(image1, sentences[0], font, font_size,
+        image_with_text_1 = self.text_on_image(image1, " ".join(sentences[:2]), font, font_size,
                                                text_color, text_background, location)
-        image_with_text_2 = self.text_on_image(image2, sentences[1], font, font_size,
+        if gen_hashtags:
+            second_story = sentences[2] + " " + hashtags[0]
+        else:
+            second_story = sentences[2]
+        image_with_text_2 = self.text_on_image(image2, second_story, font, font_size,
                                                text_color, text_background, location)
-        image_with_text_3 = self.text_on_image(image3, sentences[2], font, font_size,
-                                               text_color, text_background, location)
+
+        if gen_quiz:
+            quiz = self.process_quiz("quiz_templates/quiz" + str(len(quiz_answers)) + ".png",
+                                     quiz_question, quiz_answers, font, font)
+
+            image_with_quiz = self.embed_quiz(quiz, image3, location)
+        # TODO: add story
 
         image_with_text_1.save("static/story1.png")
         image_with_text_2.save("static/story2.png")
-        image_with_text_3.save("static/static3.png")
+        if gen_quiz:
+            image_with_quiz.save("static/story3.png")
 
 
     def wrap_text(self, text, width, font):
@@ -236,10 +273,41 @@ class StoryCreateView(View):
             text_size = editable.textsize(line, font=title_font)
             margin = (image_size[0] - text_size[0]) // 2
 
-            editable.rectangle((margin - 3, y + relative, margin + text_size[0] + 3, y + text_size[1] + relative + 2),
-                               text_background)
-            print(text_color)
+            editable.rectangle((margin - 3, y + relative, margin + text_size[0] + 3, y + text_size[1] + relative + 2), text_background)
             editable.text((margin, y + relative), line, fill=text_color, font=title_font)
             relative += text_size[1]
+
+        return image
+
+    def process_quiz(self, image, question, answers, font, font2):
+        image = Image.open(image)
+        image_size = image.size
+
+        title_font = ImageFont.truetype(font, 30)
+        title_font2 = ImageFont.truetype(font2, 30)
+        editable = ImageDraw.Draw(image)
+
+        question = self.wrap_text(question, image_size[0] - 60, title_font)
+        question = "\n".join(question)
+
+        relative = 0
+        editable.text((30, 5), question.upper(), (255, 255, 255), font=title_font)
+
+        for answer in answers:
+            editable.text((170, 218 + relative), answer, (0, 0, 0), font=title_font2)
+            relative += 168
+
+        return image
+
+    def embed_quiz(self, quiz, image, location):
+        image_size = image.size
+
+        quiz_size = quiz.size
+        quiz.thumbnail((image_size[0]*0.7, image_size[0]*0.7 * round(quiz_size[1] / quiz_size[0])), Image.ANTIALIAS)
+        quiz_size = quiz.size
+
+        margin = (image_size[0] - quiz_size[0]) // 2
+
+        image.paste(quiz, (margin, 300), quiz)
 
         return image
