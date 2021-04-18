@@ -97,19 +97,22 @@ class StoryCreateView(View):
             context["hashtags"] = self.gen_hashtags(context["summary"])
             print(context["hashtags"])
             hashtags = context["hashtags"].split(",")
-            if len(hashtags) > 2:
-                hashtags = [h.strip() for h in hashtags]
-                pytrends = TrendReq(hl='de-DE', tz=120)
-                kw_list = hashtags[:5]
-                print(kw_list)
-                pytrends.build_payload(kw_list, cat=0, timeframe='today 1-m', geo='DE')
-                interest = pytrends.interest_by_region(resolution='COUNTRY', inc_low_vol=False, inc_geo_code=False)
-                print(interest)
-                print(interest[interest.index == "Bayern"])
-                interest_dict = interest[interest.index == "Bayern"].to_dict('records')[0]
-                hashtags = sorted(interest_dict, key=interest_dict.get, reverse=True)[:2]
+            try:
+                if len(hashtags) > 2:
+                    hashtags = [h.strip() for h in hashtags]
+                    pytrends = TrendReq(hl='de-DE', tz=120)
+                    kw_list = hashtags[:5]
+                    print(kw_list)
+                    pytrends.build_payload(kw_list, cat=0, timeframe='today 1-m', geo='DE')
+                    interest = pytrends.interest_by_region(resolution='COUNTRY', inc_low_vol=False, inc_geo_code=False)
+                    print(interest)
+                    print(interest[interest.index == "Bayern"])
+                    interest_dict = interest[interest.index == "Bayern"].to_dict('records')[0]
+                    hashtags = sorted(interest_dict, key=interest_dict.get, reverse=True)[:2]
 
-            hashtags = ['#' + "".join(e for e in h if e.isalnum() and e != '-').lower() for h in hashtags]
+                hashtags = ['#' + "".join(e for e in h if e.isalnum() and e != '-').lower() for h in hashtags]
+            except:
+                hashtags = ['#' + "".join(e for e in h if e.isalnum() and e != '-').lower() for h in hashtags]
         else:
             hashtags = list()
 
@@ -141,7 +144,7 @@ class StoryCreateView(View):
             quiz_question = openai.Completion.create(
                 engine="davinci",
                 prompt=prompt_template,
-                max_tokens=188,
+                max_tokens=64,
                 temperature=0.12,
                 top_p=0.3,
                 frequency_penalty=1,
@@ -154,7 +157,7 @@ class StoryCreateView(View):
             quiz_answers = openai.Completion.create(
                 engine="davinci",
                 prompt=prompt_template,
-                max_tokens=100,
+                max_tokens=150,
                 temperature=0.12,
                 top_p=0.3,
                 frequency_penalty=1,
@@ -317,7 +320,8 @@ class StoryCreateView(View):
         editable.text((30, 5), question.upper(), (255, 255, 255), font=title_font)
 
         for answer in answers:
-            editable.text((170, 218 + relative), answer, (0, 0, 0), font=title_font2)
+            w_answer = "\n".join(self.wrap_text(answer, image_size[0] - 60, title_font2))
+            editable.text((170, 218 + relative), w_answer, (0, 0, 0), font=title_font2)
             relative += 168
 
         return image

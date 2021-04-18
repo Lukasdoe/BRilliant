@@ -1,5 +1,5 @@
 ###
 [ARTICLE_TEXT]
 ###
-Welche Antwort passt am besten zur Frage "[QUESTION]":
+Erstelle sehr kurze Antworten zur Frage "[QUESTION]":
 1.
