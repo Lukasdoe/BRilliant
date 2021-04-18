@@ -12,7 +12,7 @@ window.startStory = (images) => {
         }
     }));
     ReactDOM.render(
-        <Stories stories={stories} isPaused keyboardNavigation defaultInterval={4000}/>,
+        <Stories stories={stories} isPaused keyboardNavigation defaultInterval={6000} loop/>,
         document.getElementById('react_container')
     );
 }

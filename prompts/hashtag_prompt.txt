@@ -11,6 +11,6 @@ Amazon will in Schwarzenbach an der Saale ein Verteilzentrum bauen. Das Verteilz
 Hashtags: Amazon, Hof, Schwarzenbach, Verteilzentrum, Mobilität, Arbeitsplätze, Wirtschaft
 ###
 """
-[ARTICLE_TEXT]
+[SUMMARY]
 """
 Hashtags: 

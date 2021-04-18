@@ -79,7 +79,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md animate__animated animate__slideInRight m-3" id="article-detail-view">
+    <div class="col-md animate__animated animate__slideInRight m-3" hidden id="article-detail-view">
         <div class="card shadow">
             <div class="card-body">
                 <h5 class="mb-4 mt-4">Extracted Headline</h5>
@@ -309,9 +309,32 @@
             let poll_checker = document.getElementById("generate-poll-col");
 
             summary_checker.innerText = j.summary + " Tokens.";
+            if (j.summary > 2048) {
+                summary_checker.classList.add("text-danger");
+            } else {
+                summary_checker.classList.remove("text-danger");
+            }
+
             quiz_checker.innerText = j.quiz + " Tokens.";
+            if (j.quiz > 2048) {
+                quiz_checker.classList.add("text-danger");
+            } else {
+                quiz_checker.classList.remove("text-danger");
+            }
+
             hashtag_checker.innerText = j.hashtags + " Tokens.";
+            if (j.hashtags > 2048) {
+                hashtag_checker.classList.add("text-danger");
+            } else {
+                hashtag_checker.classList.remove("text-danger");
+            }
+
             poll_checker.innerText = j.poll + " Tokens.";
+            if (j.poll > 2048) {
+                poll_checker.classList.add("text-danger");
+            } else {
+                poll_checker.classList.remove("text-danger");
+            }
         })
     }
 

@@ -1,0 +1,5 @@
+###
+[ARTICLE_TEXT]
+###
+Welche Antwort passt am besten zur Frage "[QUESTION]":
+1.

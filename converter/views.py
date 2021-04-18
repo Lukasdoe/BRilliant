@@ -88,14 +88,13 @@ class StoryCreateView(View):
             poll = ""
 
         if body.get("gen_quiz"):
-            context["quiz"] = self.gen_quiz(body.get("article_text"))
+            context["quiz"], quiz_answers = self.gen_quiz(body.get("article_text"))
             quiz = context["quiz"]
         else:
             quiz = ""
 
         if body.get("gen_hashtags"):
-            context["hashtags"] = self.gen_hashtags(body.get("article_text"))
-
+            context["hashtags"] = self.gen_hashtags(context["summary"])
             print(context["hashtags"])
             hashtags = context["hashtags"].split(",")
             if len(hashtags) > 2:
@@ -116,9 +115,7 @@ class StoryCreateView(View):
 
         preview_path = self.load_preview_picture(body.get("preview_img"))
 
-        answers = ["Answer 1", "Answer 2", "Answer 3"]  # TODO: add openai call and put in actual answers
-
-        self.gen_stories(preview_path, summary, hashtags, quiz, answers, poll,
+        self.gen_stories(preview_path, summary, hashtags, quiz.split("1.")[0], quiz_answers, poll,
                          body.get("gen_quiz"), body.get("gen_hashtags"), body.get("gen_poll"))
 
         return HttpResponse(content=json.dumps(context), status=200, content_type="application/json")
@@ -141,7 +138,7 @@ class StoryCreateView(View):
     def gen_quiz(self, article_text):
         with open("prompts/quiz_prompt.txt", "r") as f:
             prompt_template = f.read().replace("[ARTICLE_TEXT]", article_text)
-            return openai.Completion.create(
+            quiz_question = openai.Completion.create(
                 engine="davinci",
                 prompt=prompt_template,
                 max_tokens=188,
@@ -150,12 +147,26 @@ class StoryCreateView(View):
                 frequency_penalty=1,
                 presence_penalty=0.1,
                 best_of=1,
-                stop=["\n\n", "###"],
+                stop=["\n\n", "###", "2."],
+            ).get("choices")[0].get("text").replace("1. ", "")
+        with open("prompts/quiz_answers_prompt.txt", "r") as f:
+            prompt_template = f.read().replace("[ARTICLE_TEXT]", article_text).replace("[QUESTION]", quiz_question)
+            quiz_answers = openai.Completion.create(
+                engine="davinci",
+                prompt=prompt_template,
+                max_tokens=100,
+                temperature=0.12,
+                top_p=0.3,
+                frequency_penalty=1,
+                presence_penalty=0.1,
+                best_of=1,
+                stop=["\n\n", "4."],
             ).get("choices")[0].get("text")
+        return quiz_question + "\n\n1." + quiz_answers, quiz_answers.replace("2.", "").replace("3.", "").splitlines()
 
     def gen_hashtags(self, article_text):
         with open("prompts/hashtag_prompt.txt", "r") as f:
-            prompt_template = f.read().replace("[ARTICLE_TEXT]", article_text)
+            prompt_template = f.read().replace("[SUMMARY]", article_text)
             return openai.Completion.create(
                 engine="davinci",
                 prompt=prompt_template,
