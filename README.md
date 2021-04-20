@@ -9,6 +9,12 @@ dependencies which are located in the requirements.txt file. Just install them a
 
 Afterwards, you can start the development server using `python manage.py runserver`.
 
+## Dependencies
+* Python >= 3.9
+* NPM >= 6.0.0
+* Node >= v12.0.0
+* All required python packages are listed in the requirements.txt file
+
 ## Use the API Backend
 
 In order to generate responses using GPT-3, an environment variable called `OPENAI_API_KEY` has to created, which stores
