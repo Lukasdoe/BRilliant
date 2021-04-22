@@ -5,3 +5,4 @@ db.sqlite3
 !/static/favicon.ico
 /preview_images
 /.idea/
+/static/story*
