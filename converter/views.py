@@ -104,12 +104,12 @@ class StoryCreateView(View):
                     pytrends = TrendReq(hl='de-DE', tz=120)
                     kw_list = hashtags[:5]
                     print(kw_list)
-                    pytrends.build_payload(kw_list, cat=0, timeframe='today 1-m', geo='DE')
-                    interest = pytrends.interest_by_region(resolution='COUNTRY', inc_low_vol=False, inc_geo_code=False)
+                    pytrends.build_payload(kw_list, cat=0, timeframe='today 1-m')
+                    interest = pytrends.interest_by_region(resolution='COUNTRY', inc_low_vol=True, inc_geo_code=False)
                     print(interest)
-                    print(interest[interest.index == "Bayern"])
-                    interest_dict = interest[interest.index == "Bayern"].to_dict('records')[0]
-                    hashtags = sorted(interest_dict, key=interest_dict.get, reverse=True)[:2]
+                    print(interest[interest.index == "Deutschland"])
+                    interest_dict = interest[interest.index == "Deutschland"].to_dict('records')[0]
+                    hashtags = sorted(interest_dict, key=interest_dict.get, reverse=True)
 
                 hashtags = ['#' + "".join(e for e in h if e.isalnum() and e != '-').lower() for h in hashtags]
             except:
@@ -117,6 +117,9 @@ class StoryCreateView(View):
         else:
             hashtags = list()
 
+        print(hashtags)
+        context["hashtags"] = hashtags
+        hashtags = hashtags[:2]
         preview_path = self.load_preview_picture(body.get("preview_img"))
 
         self.gen_stories(preview_path, summary, hashtags, quiz.split("1.")[0], quiz_answers, poll,
