@@ -247,7 +247,14 @@ class StoryCreateView(View):
             image_with_text_2 = self.embed_poll(poll, image_with_text_2, "")
 
         if gen_quiz:
-            quiz = self.process_quiz("quiz_templates/quiz" + str(len(quiz_answers)) + ".png",
+            quiz_length = "2"
+            if len(quiz_answers) > 4:
+                quiz_length = "4"
+                quiz_answers = quiz_answers[:4]
+            elif len(quiz_answers) != 1:
+                quiz_length = str(len(quiz_answers))
+
+            quiz = self.process_quiz("quiz_templates/quiz" + quiz_length + ".png",
                                      quiz_question, quiz_answers, font, font)
 
             image_with_quiz = self.embed_quiz(quiz, image3, location)
