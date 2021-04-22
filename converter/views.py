@@ -168,9 +168,10 @@ class StoryCreateView(View):
             ).get("choices")[0].get("text")
         return quiz_question + "\n\n1." + quiz_answers, quiz_answers.replace("2.", "").replace("3.", "").splitlines()
 
-    def gen_hashtags(self, article_text):
+    def gen_hashtags(self, article_summary):
         with open("prompts/hashtag_prompt.txt", "r") as f:
-            prompt_template = f.read().replace("[SUMMARY]", article_text)
+            prompt_template = f.read().replace("[SUMMARY]", article_summary)
+            print(prompt_template)
             return openai.Completion.create(
                 engine="davinci",
                 prompt=prompt_template,
