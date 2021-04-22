@@ -13,4 +13,4 @@ Hashtags: Amazon, Hof, Schwarzenbach, Verteilzentrum, Mobilität, Arbeitsplätze
 """
 [SUMMARY]
 """
-Hashtags: 
+Hashtags:
