@@ -92,6 +92,7 @@ class StoryCreateView(View):
             quiz = context["quiz"]
         else:
             quiz = ""
+            quiz_answers = ""
 
         if body.get("gen_hashtags"):
             context["hashtags"] = self.gen_hashtags(context["summary"])
