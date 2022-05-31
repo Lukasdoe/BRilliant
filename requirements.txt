@@ -10,4 +10,4 @@ sqlparse
 typing-extensions
 openai~=0.6.3
 pytrends~=4.7.3
-Pillow~=8.2.0
+Pillow>=9.0.1
